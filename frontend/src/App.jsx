@@ -72,7 +72,7 @@ function App() {
                 }
               />
             </Routes>
-          </div>
+      </div>
         </AuthProvider>
       </Router>
     </HelmetProvider>

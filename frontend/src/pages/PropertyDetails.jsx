@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../hooks/useAuth'
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
+// import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function PropertyDetails() {
   const { id } = useParams()
@@ -318,15 +320,27 @@ export default function PropertyDetails() {
               {property.latitude && property.longitude && (
                 <div className="mt-6">
                   <h2 className="text-lg font-medium text-gray-900 mb-4">Location Map</h2>
-                  <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
-                    <GoogleMap
-                      mapContainerStyle={mapContainerStyle}
-                      center={center}
-                      zoom={15}
-                    >
-                      <Marker position={center} />
-                    </GoogleMap>
-                  </LoadScript>
+                  <div style={{ height: '400px', width: '100%' }}>
+                    {GOOGLE_MAPS_API_KEY ? (
+                      <div>Map will be shown here when Google Maps API key is provided.</div>
+                    ) : (
+                      <div
+                        style={{
+                          height: '100%',
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#f3f4f6',
+                          color: '#6b7280',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                        }}
+                      >
+                        Map feature coming in a future update.
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
