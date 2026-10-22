@@ -76,6 +76,7 @@ app.use(
   })
 );
 
+// Primary canonical API v1 routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/properties', propertyRoutes);
 app.use('/api/v1/users', userRoutes);
@@ -83,6 +84,22 @@ app.use('/api/v1/uploads', uploadRoutes);
 app.use('/api/v1/appointments', appointmentRoutes);
 app.use('/api/v1/messages', messageRoutes);
 app.use('/api/v1/favorites', favoriteRoutes);
+
+// Compatibility route aliases for clients connecting with /api or root path
+app.use('/api/auth', authRoutes);
+app.use('/api/properties', propertyRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/uploads', uploadRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/favorites', favoriteRoutes);
+
+app.use('/auth', authRoutes);
+app.use('/properties', propertyRoutes);
+app.use('/users', userRoutes);
+app.use('/appointments', appointmentRoutes);
+app.use('/messages', messageRoutes);
+app.use('/favorites', favoriteRoutes);
 
 app.use(errorHandler);
 
