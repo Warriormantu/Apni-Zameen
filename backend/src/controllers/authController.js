@@ -7,6 +7,18 @@ const createToken = (userId) => {
   });
 };
 
+const formatUserResponse = (user) => {
+  if (!user) return null;
+  const idStr = user._id ? user._id.toString() : user.id?.toString();
+  const raw = user.toObject ? user.toObject() : { ...user };
+  delete raw.password;
+  return {
+    ...raw,
+    _id: idStr,
+    id: idStr,
+  };
+};
+
 export const register = async (req, res, next) => {
   try {
     const { name, email, phone, password, role } = req.validated.body;
@@ -21,7 +33,7 @@ export const register = async (req, res, next) => {
     res.status(201).json({
       success: true,
       data: {
-        user: { id: user._id, name: user.name, email: user.email, role: user.role },
+        user: formatUserResponse(user),
         token,
       },
       message: 'Registration successful',
@@ -43,7 +55,7 @@ export const login = async (req, res, next) => {
     res.json({
       success: true,
       data: {
-        user: { id: user._id, name: user.name, email: user.email, role: user.role },
+        user: formatUserResponse(user),
         token,
       },
       message: 'Login successful',
@@ -55,7 +67,7 @@ export const login = async (req, res, next) => {
 
 export const me = async (req, res, next) => {
   try {
-    res.json({ success: true, data: req.user });
+    res.json({ success: true, data: formatUserResponse(req.user) });
   } catch (error) {
     next(error);
   }

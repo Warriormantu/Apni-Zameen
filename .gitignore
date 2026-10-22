@@ -11,3 +11,11 @@ coverage/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Local uploads & large datasets
+backend/uploads/
+uploads/
+*.csv
+
+# UI prototype mockups
+stitch_apnizameen_real_estate_platform/

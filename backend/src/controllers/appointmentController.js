@@ -57,21 +57,45 @@ export const listAppointments = async (req, res, next) => {
 
 export const updateAppointment = async (req, res, next) => {
   try {
+    const appointmentId = req.params.id;
+    if (!/^[0-9a-fA-F]{24}$/.test(appointmentId)) {
+      return res.status(400).json({ success: false, error: 'Invalid appointment ID format' });
+    }
+
     const { status } = req.validated.body;
-    const appointment = await Appointment.findById(req.params.id).populate('property');
+    const appointment = await Appointment.findById(appointmentId).populate('property');
     if (!appointment) {
       return res.status(404).json({ success: false, error: 'Appointment not found' });
     }
 
-    if (req.user.role === 'user' && !appointment.user.equals(req.user._id)) {
-      return res.status(403).json({ success: false, error: 'Forbidden' });
+    if (!appointment.property) {
+      return res.status(404).json({ success: false, error: 'Property not found' });
     }
 
-    if (req.user.role === 'owner' || req.user.role === 'agent') {
-      const property = appointment.property;
-      if (!property.owner.equals(req.user._id) && !property.agent.equals(req.user._id)) {
+    const property = appointment.property;
+    const isOwner = Boolean(
+      property.owner && (property.owner.equals ? property.owner.equals(req.user._id) : property.owner.toString() === req.user._id.toString())
+    );
+    const isAgent = Boolean(
+      property.agent && (property.agent.equals ? property.agent.equals(req.user._id) : property.agent.toString() === req.user._id.toString())
+    );
+    const isRequester = Boolean(
+      appointment.user && (appointment.user.equals ? appointment.user.equals(req.user._id) : appointment.user.toString() === req.user._id.toString())
+    );
+
+    if (req.user.role === 'admin') {
+      // Administrators have full access
+    } else if (req.user.role === 'user') {
+      if (!isRequester) {
         return res.status(403).json({ success: false, error: 'Forbidden' });
       }
+    } else if (req.user.role === 'owner' || req.user.role === 'agent') {
+      if (!isOwner && !isAgent) {
+        return res.status(403).json({ success: false, error: 'Forbidden' });
+      }
+    } else {
+      // Unsupported or unauthorized roles cannot modify appointments
+      return res.status(403).json({ success: false, error: 'Forbidden' });
     }
 
     appointment.status = status;

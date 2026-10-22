@@ -3,6 +3,16 @@ import api from '../services/api.js';
 
 const AuthContext = createContext();
 
+const normalizeUser = (userData) => {
+  if (!userData) return null;
+  const canonicalId = String(userData._id || userData.id || '');
+  return {
+    ...userData,
+    _id: canonicalId,
+    id: canonicalId,
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -10,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   const fetchMe = async () => {
     try {
       const response = await api.get('/auth/me');
-      setUser(response.data.data);
+      setUser(normalizeUser(response.data.data));
     } catch (error) {
       setUser(null);
     } finally {
@@ -30,14 +40,14 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     const response = await api.post('/auth/login', credentials);
     localStorage.setItem('az_token', response.data.data.token);
-    setUser(response.data.data.user);
+    setUser(normalizeUser(response.data.data.user));
     return response;
   };
 
   const register = async (payload) => {
     const response = await api.post('/auth/register', payload);
     localStorage.setItem('az_token', response.data.data.token);
-    setUser(response.data.data.user);
+    setUser(normalizeUser(response.data.data.user));
     return response;
   };
 
@@ -46,7 +56,25 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  return <AuthContext.Provider value={{ user, loading, login, register, logout }}>{children}</AuthContext.Provider>;
+  const updateUser = (updatedData) => {
+    if (!updatedData) return;
+    setUser((prev) => {
+      if (!prev) return prev;
+      const { name, phone, profileImage } = updatedData;
+      return {
+        ...prev,
+        ...(name !== undefined && { name }),
+        ...(phone !== undefined && { phone }),
+        ...(profileImage !== undefined && { profileImage }),
+      };
+    });
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser, setUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);
